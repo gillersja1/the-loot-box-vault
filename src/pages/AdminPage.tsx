@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
-import { STARTER_IDS, approveItem, rejectItem, seedCatalog, watchApprovedItems, watchPendingItems, type ItemEdits } from '../lib/api';
+import { ItemEditor } from '../components/ItemEditor';
+import { STARTER_IDS, rejectItem, saveItem, seedCatalog, watchApprovedItems, watchPendingItems } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { ITEM_TYPES } from '../lib/itemTypes';
-import { RARITIES, RARITY_LABEL } from '../lib/rarity';
-import type { Category, Item, Rarity } from '../lib/types';
+import type { Item } from '../lib/types';
 
 export function AdminPage() {
   const { user, admin, ready } = useAuth();
@@ -87,17 +86,6 @@ export function AdminPage() {
 function PendingRow({ item }: { item: Item }) {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState<ItemEdits>({
-    name: item.name,
-    category: item.category,
-    type: item.type,
-    rarity: item.rarity,
-    series: item.series ?? '',
-    number: item.number ?? '',
-    notes: item.notes ?? '',
-  });
-  const set = <K extends keyof ItemEdits>(k: K, v: ItemEdits[K]) => setForm((f) => ({ ...f, [k]: v }));
-  const types = ITEM_TYPES[form.category].includes(form.type) ? ITEM_TYPES[form.category] : [form.type, ...ITEM_TYPES[form.category]];
 
   async function run(action: () => Promise<void>, done: string) {
     setBusy(true);
@@ -111,68 +99,24 @@ function PendingRow({ item }: { item: Item }) {
   }
 
   return (
-    <article className={`hud-panel pending rarity-${form.rarity}`} aria-label={`Submission: ${item.name}`}>
-      <div className="form-grid">
-        <label className="wide">
-          <span>Name</span>
-          <input required maxLength={120} value={form.name} onChange={(e) => set('name', e.target.value)} />
-        </label>
-        <label>
-          <span>Category</span>
-          <select
-            value={form.category}
-            onChange={(e) => {
-              const c = e.target.value as Category;
-              setForm((f) => ({ ...f, category: c, type: ITEM_TYPES[c][0] }));
-            }}
+    <ItemEditor
+      item={item}
+      label={`Submission: ${item.name}`}
+      busy={busy}
+      actions={(form, valid) => (
+        <>
+          <button
+            className="btn btn-primary"
+            disabled={busy || !valid}
+            onClick={() => run(() => saveItem(item.id, form, true), `${form.name.trim()} approved. It's in the catalog now.`)}
           >
-            <option value="merch">Merch</option>
-            <option value="card">Card</option>
-          </select>
-        </label>
-        <label>
-          <span>Type</span>
-          <select value={form.type} onChange={(e) => set('type', e.target.value)}>
-            {types.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Series / set</span>
-          <input maxLength={80} value={form.series} onChange={(e) => set('series', e.target.value)} />
-        </label>
-        <label>
-          <span>Number</span>
-          <input maxLength={20} value={form.number} onChange={(e) => set('number', e.target.value)} />
-        </label>
-        <label>
-          <span>Rarity</span>
-          <select value={form.rarity} onChange={(e) => set('rarity', e.target.value as Rarity)}>
-            {RARITIES.map((r) => (
-              <option key={r} value={r}>
-                {RARITY_LABEL[r]}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="wide">
-          <span>Notes</span>
-          <textarea maxLength={500} rows={2} value={form.notes} onChange={(e) => set('notes', e.target.value)} />
-        </label>
-      </div>
-      <div className="pending-actions">
-        <button
-          className="btn btn-primary"
-          disabled={busy || !form.name.trim()}
-          onClick={() => run(() => approveItem(item.id, form), `${form.name.trim()} approved. It's in the catalog now.`)}
-        >
-          Approve
-        </button>
-        <button className="btn btn-danger" disabled={busy} onClick={() => run(() => rejectItem(item.id), `${item.name} rejected.`)}>
-          Reject
-        </button>
-      </div>
-    </article>
+            Approve
+          </button>
+          <button className="btn btn-danger" disabled={busy} onClick={() => run(() => rejectItem(item.id), `${item.name} rejected.`)}>
+            Reject
+          </button>
+        </>
+      )}
+    />
   );
 }

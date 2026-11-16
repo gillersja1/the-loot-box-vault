@@ -12,6 +12,7 @@ export interface Item {
   number?: string;
   rarity: Rarity;
   notes?: string;
+  imageUrl?: string;
   status: ItemStatus;
   submittedBy: string;
 }

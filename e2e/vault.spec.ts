@@ -143,3 +143,13 @@ test('researched merch, comics and RPG products are in the catalog', async ({ pa
   await page.getByRole('searchbox').fill('Kickstarter');
   await expect(page.getByRole('article').first()).toContainText('Legendary');
 });
+
+test('the catalog is grouped into collapsible sections', async ({ page }) => {
+  await page.goto('/?tab=cards');
+  const factionWars = page.locator('details', { has: page.getByText('Rainbow Foil: Faction Wars', { exact: true }) });
+  await expect(factionWars.getByRole('article')).toHaveCount(11);
+  await factionWars.getByText('Rainbow Foil: Faction Wars', { exact: true }).click();
+  await expect(factionWars.getByRole('article').first()).toBeHidden();
+  // Items without an image link get a labeled placeholder.
+  await expect(page.getByRole('img', { name: 'Carl (no image)' }).first()).toBeVisible();
+});

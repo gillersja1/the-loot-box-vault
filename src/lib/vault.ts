@@ -1,3 +1,4 @@
+import { ITEM_TYPES } from './itemTypes';
 import { rarityRank } from './rarity';
 import type { Category, Entries, EntryState, Item, Rarity } from './types';
 
@@ -28,6 +29,14 @@ export function filterItems(items: Item[], entries: Entries, f: CatalogFilter): 
 export function compareItems(a: Item, b: Item): number {
   const series = (a.series ?? '').localeCompare(b.series ?? '');
   if (series !== 0) return series;
+  // Within a card set, list each parallel together (Classic, then Emerald, then foils...).
+  if (a.category === 'card' && b.category === 'card' && a.type !== b.type) {
+    const rank = (t: string) => {
+      const i = ITEM_TYPES.card.indexOf(t);
+      return i === -1 ? ITEM_TYPES.card.length : i; // unknown types last
+    };
+    return rank(a.type) - rank(b.type) || a.type.localeCompare(b.type);
+  }
   // Numbered items first, in numeric order; unnumbered ones (sketch, signed) after.
   const na = a.number ? Number(a.number) : Number.NaN;
   const nb = b.number ? Number(b.number) : Number.NaN;
@@ -67,4 +76,30 @@ export function vaultStats(items: Item[], entries: Entries): VaultStats {
 /** Clicking the same state again clears it; otherwise it switches. */
 export function nextState(current: EntryState | undefined, clicked: EntryState): EntryState | null {
   return current === clicked ? null : clicked;
+}
+
+export interface ItemGroup {
+  key: string;
+  items: Item[];
+}
+
+/** Section heading for an item: cards by parallel + subset (from notes), merch by series. */
+export function groupKey(item: Item): string {
+  if (item.category === 'card') {
+    const subset = item.notes?.split(' · ')[0]?.trim();
+    return subset ? `${item.type}: ${subset}` : item.type;
+  }
+  return item.series?.trim() || item.type;
+}
+
+/** Groups already-sorted items, keeping groups in order of their first item. */
+export function groupItems(items: Item[]): ItemGroup[] {
+  const groups = new Map<string, Item[]>();
+  for (const item of items) {
+    const key = groupKey(item);
+    const list = groups.get(key);
+    if (list) list.push(item);
+    else groups.set(key, [item]);
+  }
+  return [...groups].map(([key, list]) => ({ key, items: list }));
 }

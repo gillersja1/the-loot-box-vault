@@ -83,10 +83,23 @@ export function watchPendingItems(cb: (items: Item[]) => void, onError: (e: Erro
   return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Item)), onError);
 }
 
-export type ItemEdits = Pick<Item, 'name' | 'category' | 'type' | 'rarity'> & { series: string; number: string; notes: string };
+export type ItemEdits = Pick<Item, 'name' | 'category' | 'type' | 'rarity'> & { series: string; number: string; notes: string; imageUrl: string };
 
-/** Admin-only: applies edits and publishes the item. Empty optional fields are removed. */
-export async function approveItem(id: string, edits: ItemEdits) {
+export function toEdits(item: Item): ItemEdits {
+  return {
+    name: item.name,
+    category: item.category,
+    type: item.type,
+    rarity: item.rarity,
+    series: item.series ?? '',
+    number: item.number ?? '',
+    notes: item.notes ?? '',
+    imageUrl: item.imageUrl ?? '',
+  };
+}
+
+/** Admin-only: saves edits; empty optional fields are removed. Pass approve to publish a pending item. */
+export async function saveItem(id: string, edits: ItemEdits, approve = false) {
   const optional = (v: string) => (v.trim() ? v.trim() : deleteField());
   await updateDoc(doc(db, 'items', id), {
     name: edits.name.trim(),
@@ -96,11 +109,17 @@ export async function approveItem(id: string, edits: ItemEdits) {
     series: optional(edits.series),
     number: optional(edits.number),
     notes: optional(edits.notes),
-    status: 'approved',
+    imageUrl: optional(edits.imageUrl),
+    ...(approve ? { status: 'approved' } : {}),
   });
 }
 
-/** Admin-only: rejecting a submission deletes it. */
+export async function getItem(id: string): Promise<Item | null> {
+  const snap = await getDoc(doc(db, 'items', id));
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Item) : null;
+}
+
+/** Admin-only: deletes an item (rejecting a submission, or removing a catalog item). */
 export async function rejectItem(id: string) {
   await deleteDoc(doc(db, 'items', id));
 }

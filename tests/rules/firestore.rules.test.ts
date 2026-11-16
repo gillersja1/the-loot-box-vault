@@ -95,6 +95,14 @@ describe('items', () => {
     await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { name: '' }));
   });
 
+  it('image links must be https and reasonably short', async () => {
+    await assertSucceeds(updateDoc(doc(as('admin'), 'items/approved-1'), { imageUrl: 'https://img.example/a.png' }));
+    await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { imageUrl: 'http://img.example/a.png' }));
+    await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { imageUrl: 'javascript:alert(1)' }));
+    await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { imageUrl: `https://x/${'a'.repeat(500)}` }));
+    await assertFails(updateDoc(doc(as('bob'), 'items/pending-bob'), { imageUrl: 'https://img.example/a.png' }));
+  });
+
   it('admins can create approved items directly (catalog seeding)', async () => {
     await assertSucceeds(setDoc(doc(as('admin'), 'items/seeded'), card({ status: 'approved', submittedBy: 'admin' })));
   });

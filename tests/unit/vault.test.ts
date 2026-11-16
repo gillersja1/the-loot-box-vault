@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { RARITIES, isRarity, quipFor, rarityRank } from '../../src/lib/rarity';
 import type { Entries, Item } from '../../src/lib/types';
-import { compareItems, filterItems, nextState, vaultStats } from '../../src/lib/vault';
+import { compareItems, filterItems, groupItems, groupKey, nextState, vaultStats } from '../../src/lib/vault';
+import { isValidImageUrl } from '../../src/components/ItemEditor';
 
 const item = (over: Partial<Item>): Item => ({
   id: 'x',
@@ -101,4 +102,41 @@ describe('rarity', () => {
       expect(quipFor(r, 1)).toBeTruthy();
     }
   });
+});
+
+describe('grouping', () => {
+  const card = (over: Partial<Item>) => item({ category: 'card', series: 'S1', ...over });
+
+  it('groups cards by parallel and subset, merch by series', () => {
+    expect(groupKey(card({ type: 'Emerald parallel', notes: 'Dungeon Mobs · Emerald 1:1' }))).toBe('Emerald parallel: Dungeon Mobs');
+    expect(groupKey(card({ type: 'Classic' }))).toBe('Classic');
+    expect(groupKey(item({ series: 'Loot Box: Donut' }))).toBe('Loot Box: Donut');
+    expect(groupKey(item({ series: undefined, type: 'Plush' }))).toBe('Plush');
+  });
+
+  it('lists each parallel together, in set order, before grouping', () => {
+    const cards = [
+      card({ id: 'e1', type: 'Emerald parallel', number: '1', notes: 'Book Covers' }),
+      card({ id: 'c2', type: 'Classic', number: '2', notes: 'Book Covers' }),
+      card({ id: 'c1', type: 'Classic', number: '1', notes: 'Book Covers' }),
+      card({ id: 'x', type: 'Mystery', number: '1' }),
+    ].sort(compareItems);
+    expect(cards.map((c) => c.id)).toEqual(['c1', 'c2', 'e1', 'x']);
+    expect(groupItems(cards).map((g) => [g.key, g.items.length])).toEqual([
+      ['Classic: Book Covers', 2],
+      ['Emerald parallel: Book Covers', 1],
+      ['Mystery', 1],
+    ]);
+  });
+});
+
+describe('isValidImageUrl', () => {
+  it.each([
+    ['', true],
+    ['https://img.example/card.png', true],
+    ['http://img.example/card.png', false],
+    ['javascript:alert(1)', false],
+    ['https://has space.png', false],
+    [`https://x/${'a'.repeat(500)}`, false],
+  ])('%s -> %s', (url, ok) => expect(isValidImageUrl(url)).toBe(ok));
 });
