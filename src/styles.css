@@ -203,3 +203,39 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent-2); outli
 .btn-danger { border-color: var(--danger); color: var(--danger); }
 .btn-danger:hover { box-shadow: 0 0 14px rgba(255, 107, 125, 0.35); border-color: var(--danger); }
 .starter-line { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 14px 0 0; color: var(--accent-2); font-size: 0.9rem; }
+
+/* Item images */
+.item-img { border-radius: 8px; overflow: hidden; background: var(--bg); border: 1px solid color-mix(in srgb, var(--r) 30%, var(--line)); display: grid; place-items: center; }
+.item-img.is-card { aspect-ratio: 5 / 7; }
+.item-img.is-merch { aspect-ratio: 1 / 1; }
+.item-img img { width: 100%; height: 100%; object-fit: contain; }
+.item-img.placeholder {
+  position: relative; align-content: center; gap: 4px; text-align: center; font-family: var(--mono);
+  background:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--r) 10%, transparent) 0 6px, transparent 6px 14px),
+    radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--r) 30%, transparent), transparent 70%),
+    var(--bg);
+}
+.ph-number { font-size: 2.2rem; font-weight: 800; color: var(--r); text-shadow: 0 0 18px color-mix(in srgb, var(--r) 60%, transparent); }
+.ph-type { font-size: 0.75rem; color: var(--text); letter-spacing: 0.08em; text-transform: uppercase; }
+.ph-rarity { font-size: 0.65rem; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; }
+.edit-link { margin-left: 8px; font-family: var(--mono); font-size: 0.75rem; }
+
+/* Catalog groups */
+.group { margin: 0 0 14px; }
+.group > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer; list-style: none;
+  padding: 10px 14px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel);
+  font-family: var(--mono);
+}
+.group > summary::-webkit-details-marker { display: none; }
+.group > summary::before { content: '▸'; color: var(--accent-2); transition: transform 0.2s; }
+.group[open] > summary::before { transform: rotate(90deg); }
+.group-title { flex: 1; font-weight: 800; }
+.group-count { color: var(--accent); font-size: 0.85rem; }
+
+/* Editor */
+.editor { display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: start; }
+.editor fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.field-error { color: var(--danger); font-size: 0.8rem; }
+@media (max-width: 640px) { .editor { grid-template-columns: 1fr; } .editor-preview { max-width: 160px; } }

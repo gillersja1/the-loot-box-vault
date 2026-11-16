@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { signOutUser, useAuth } from './lib/auth';
 import { AdminPage } from './pages/AdminPage';
+import { EditItemPage } from './pages/EditItemPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { LoginPage } from './pages/LoginPage';
 import { SubmitPage } from './pages/SubmitPage';
@@ -38,6 +39,7 @@ export function App() {
           <Route path="/vault/:uid" element={<VaultPage />} />
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/item/:id" element={<EditItemPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<p className="empty">404: this floor collapsed.</p>} />
         </Routes>

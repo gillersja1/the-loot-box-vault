@@ -7,7 +7,7 @@ import { seedCatalog, setEntry, watchApprovedItems, watchEntries } from '../lib/
 import { useAuth } from '../lib/auth';
 import { RARITIES, RARITY_LABEL } from '../lib/rarity';
 import type { Category, Entries, EntryState, Item, Rarity } from '../lib/types';
-import { filterItems, nextState, vaultStats, type OwnershipFilter } from '../lib/vault';
+import { filterItems, groupItems, nextState, vaultStats, type OwnershipFilter } from '../lib/vault';
 
 export function CatalogPage() {
   const { user, admin } = useAuth();
@@ -136,11 +136,24 @@ export function CatalogPage() {
           )}
         </div>
       ) : (
-        <div className="grid">
-          {visible.map((item) => (
-            <ItemCard key={item.id} item={item} state={entries[item.id]} onMark={(s) => mark(item, s)} />
-          ))}
-        </div>
+        groupItems(visible).map((group) => {
+          const owned = group.items.filter((i) => entries[i.id] === 'owned').length;
+          return (
+            <details key={group.key} className="group" open>
+              <summary>
+                <span className="group-title">{group.key}</span>
+                <span className="group-count" aria-label={`${owned} of ${group.items.length} owned`}>
+                  {user ? `${owned}/${group.items.length}` : group.items.length}
+                </span>
+              </summary>
+              <div className="grid">
+                {group.items.map((item) => (
+                  <ItemCard key={item.id} item={item} state={entries[item.id]} onMark={(s) => mark(item, s)} editable={admin} />
+                ))}
+              </div>
+            </details>
+          );
+        })
       )}
 
       {reveal && <LootBoxReveal item={reveal} onClose={() => setReveal(null)} />}

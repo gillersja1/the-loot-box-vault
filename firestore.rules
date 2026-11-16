@@ -14,7 +14,7 @@ service cloud.firestore {
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
 
     function validItem(d) {
-      return d.keys().hasOnly(['name', 'category', 'type', 'series', 'number', 'rarity', 'notes', 'status', 'submittedBy', 'createdAt'])
+      return d.keys().hasOnly(['name', 'category', 'type', 'series', 'number', 'rarity', 'notes', 'imageUrl', 'status', 'submittedBy', 'createdAt'])
         && d.keys().hasAll(['name', 'category', 'type', 'rarity', 'status', 'submittedBy', 'createdAt'])
         && d.name is string && d.name.size() > 0 && d.name.size() <= 120
         && d.category in ['merch', 'card']
@@ -23,7 +23,8 @@ service cloud.firestore {
         && d.status in ['approved', 'pending']
         && (!('series' in d) || (d.series is string && d.series.size() <= 80))
         && (!('number' in d) || (d.number is string && d.number.size() <= 20))
-        && (!('notes' in d) || (d.notes is string && d.notes.size() <= 500));
+        && (!('notes' in d) || (d.notes is string && d.notes.size() <= 500))
+        && (!('imageUrl' in d) || (d.imageUrl is string && d.imageUrl.size() <= 500 && d.imageUrl.matches('https://.+')));
     }
 
     match /items/{itemId} {
