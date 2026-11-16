@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { cropStyle, parseCrop } from '../lib/imageCrop';
 import { RARITY_LABEL } from '../lib/rarity';
 import type { Item } from '../lib/types';
 
@@ -8,6 +9,15 @@ export function ItemImage({ item }: { item: Pick<Item, 'name' | 'category' | 'ty
   const shape = item.category === 'card' ? 'is-card' : 'is-merch';
   const url = item.imageUrl && item.imageUrl !== failedUrl ? item.imageUrl : null;
 
+  const crop = url ? parseCrop(url) : null;
+  if (url && crop) {
+    // One variant cropped out of a group photo.
+    return (
+      <div className={`item-img ${shape} cropped`}>
+        <img src={url.split('#')[0]} alt={item.name} loading="lazy" referrerPolicy="no-referrer" style={cropStyle(crop)} onError={() => setFailedUrl(url)} />
+      </div>
+    );
+  }
   if (url) {
     return (
       <div className={`item-img ${shape}`}>

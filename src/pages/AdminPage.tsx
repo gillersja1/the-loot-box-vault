@@ -31,7 +31,7 @@ export function AdminPage() {
     setSeeding(true);
     try {
       const n = await fillStarterImages(approved);
-      toast(`${n} items now have official images.`);
+      toast(`${n} official images updated.`);
     } catch {
       toast('Adding images failed.', 'error');
     } finally {
@@ -86,9 +86,9 @@ export function AdminPage() {
         )}
         {missingImages > 0 && (
           <p className="starter-line">
-            <span>{missingImages} catalog items have an official image available.</span>
+            <span>{missingImages} catalog items have a new or better official image.</span>
             <button className="btn btn-primary" disabled={seeding} onClick={fillImages}>
-              Fill {missingImages} missing images
+              Update {missingImages} official images
             </button>
           </p>
         )}

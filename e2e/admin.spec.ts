@@ -114,7 +114,7 @@ test.describe('admin approvals', () => {
     await page.getByRole('link', { name: 'Admin' }).click();
     // Other parallel tests may have filled them already; only click if offered.
     await expect(page.getByTestId('catalog-status')).toBeVisible();
-    const fill = page.getByRole('button', { name: /^Fill \d+ missing images$/ });
+    const fill = page.getByRole('button', { name: /^Update \d+ official images$/ });
     // The desktop and mobile projects share one emulator, so the other may click first.
     if (await fill.isVisible()) await fill.click({ timeout: 3000 }).catch(() => {});
     await expect(fill).toBeHidden({ timeout: 15000 });

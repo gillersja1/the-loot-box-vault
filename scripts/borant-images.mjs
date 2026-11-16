@@ -53,7 +53,24 @@ Object.assign(BORANT_IMAGES, {
   'm-collectible-crawlers-mordecai-incubus': `${UP}/2026/07/DCC_CollCrawlers_Mordecai_1-768x576.png`,
   'm-dungeon-highlights-dungeon-highlights-statue-blind-box': `${UP}/2026/07/DCC_DungeonHi-lights_1b-768x576.png`,
 });
-// Blind-box lines have one product photo for the whole line.
+// Variants shown together in a labeled group photo: crop each one out with a
+// W3C media fragment (#xywh=percent:x,y,w,h), which the app's ItemImage understands.
+const crop = (file, x, y, w, h) => `${UP}/2026/07/${file}-768x576.png#xywh=percent:${x},${y},${w},${h}`;
+Object.assign(BORANT_IMAGES, {
+  'm-princess-posse-plush-dirty-shirley-donut': crop('DCC_Donut_Plush_BlindBox_2', 4, 42, 36, 48),
+  'm-princess-posse-plush-chonk-donut': crop('DCC_Donut_Plush_BlindBox_2', 31, 4, 36, 48),
+  'm-princess-posse-plush-loaf-donut': crop('DCC_Donut_Plush_BlindBox_2', 59, 40, 36, 48),
+  'm-princess-posse-plush-sunnies-donut': crop('DCC_Donut_Plush_BlindBox_3c', 10, 28, 36, 48),
+  'm-princess-posse-plush-sailor-donut': crop('DCC_Donut_Plush_BlindBox_3c', 51, 28, 36, 48),
+  'm-loot-box-donut-gold-grand-champion-box': crop('DCC_LootBox_Donuts_2b', 42, 0, 50, 67),
+  'm-loot-box-donut-bronze-earth-box': crop('DCC_LootBox_Donuts_2b', 0, 36, 40, 53),
+  'm-loot-box-donut-gold-apparel-box': crop('DCC_LootBox_Donuts_2b', 48, 47, 40, 53),
+  'm-loot-box-donut-bronze-asshole-box': crop('DCC_LootBox_Donuts_3b', 57, 0, 40, 53),
+  'm-loot-box-donut-silver-adventurer-box': crop('DCC_LootBox_Donuts_3b', 60, 44, 40, 53),
+  'm-loot-box-donut-silver-boss-box': crop('DCC_LootBox_Donuts_3b', 17, 31, 40, 53),
+});
+
+// Lines without labeled variant photos share one product photo.
 const linePhoto = {
   'm-loot-box-donut-': `${UP}/2026/07/DCC_LootBox_Donuts_1d-768x576.png`,
   'm-princess-posse-plush-': `${UP}/2026/07/DCC_Donut_Plush_BlindBox_1b-768x576.png`,

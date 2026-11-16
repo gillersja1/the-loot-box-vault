@@ -68,12 +68,21 @@ const STARTER_IMAGES = new Map<string, string>(
   seed.flatMap((s) => ('imageUrl' in s && typeof s.imageUrl === 'string' ? [[s.id, s.imageUrl] as [string, string]] : [])),
 );
 
-/** Catalog items that have no image yet but have an official one in the starter catalog. */
+const OFFICIAL_IMAGE_HOST = 'https://www.borantcorp.com/';
+
+/**
+ * Catalog items whose official starter image is missing or outdated. Images an admin
+ * set from any other site are never touched.
+ */
 export function itemsMissingStarterImages(items: Item[]): Item[] {
-  return items.filter((i) => !i.imageUrl && STARTER_IMAGES.has(i.id));
+  return items.filter((i) => {
+    const starter = STARTER_IMAGES.get(i.id);
+    if (!starter || i.imageUrl === starter) return false;
+    return !i.imageUrl || i.imageUrl.startsWith(OFFICIAL_IMAGE_HOST);
+  });
 }
 
-/** Admin-only: adds starter image links to items that have none (never replaces an existing image). */
+/** Admin-only: applies starter image links to the items itemsMissingStarterImages picks. */
 export async function fillStarterImages(items: Item[]) {
   const targets = itemsMissingStarterImages(items);
   for (let i = 0; i < targets.length; i += 400) {
