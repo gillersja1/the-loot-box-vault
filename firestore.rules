@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// The Loot Box Vault security rules.
+// - items: the shared catalog. Anyone can read approved items; signed-in crawlers can
+//   submit pending items; only admins approve, edit or delete.
+// - vaults/{uid}: one vault per user. Owner-only writes; readable by anyone when public.
+// - vaults/{uid}/entries/{itemId}: owned / want / grail marks for one catalog item.
+// - admins/{uid}: presence of the doc grants admin. Managed from the console only.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isAdmin() { return signedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    function validItem(d) {
+      return d.keys().hasOnly(['name', 'category', 'type', 'series', 'number', 'rarity', 'notes', 'status', 'submittedBy', 'createdAt'])
+        && d.keys().hasAll(['name', 'category', 'type', 'rarity', 'status', 'submittedBy', 'createdAt'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 120
+        && d.category in ['merch', 'card']
+        && d.type is string && d.type.size() <= 40
+        && d.rarity in ['bronze', 'silver', 'gold', 'platinum', 'legendary', 'celestial']
+        && d.status in ['approved', 'pending']
+        && (!('series' in d) || (d.series is string && d.series.size() <= 80))
+        && (!('number' in d) || (d.number is string && d.number.size() <= 20))
+        && (!('notes' in d) || (d.notes is string && d.notes.size() <= 500));
+    }
+
+    match /items/{itemId} {
+      allow read: if resource.data.status == 'approved'
+        || isAdmin()
+        || (signedIn() && resource.data.submittedBy == request.auth.uid);
+      allow create: if signedIn()
+        && validItem(request.resource.data)
+        && request.resource.data.submittedBy == request.auth.uid
+        && (request.resource.data.status == 'pending' || isAdmin())
+        && request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() && validItem(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    match /vaults/{uid} {
+      allow read: if isOwner(uid) || resource.data.isPublic == true;
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['displayName', 'isPublic', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.isPublic is bool
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if isOwner(uid);
+
+      match /entries/{itemId} {
+        allow read: if isOwner(uid)
+          || get(/databases/$(database)/documents/vaults/$(uid)).data.isPublic == true;
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['state', 'updatedAt'])
+          && request.resource.data.state in ['owned', 'want', 'grail']
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isOwner(uid);
+      }
+    }
+  }
+}

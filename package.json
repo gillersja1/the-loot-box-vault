@@ -1,0 +1,39 @@
+{
+  "name": "the-loot-box-vault",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A Dungeon Crawler Carl fan collectors site: track merch and cards, open loot boxes, share your vault.",
+  "scripts": {
+    "dev": "vite",
+    "dev:emu": "vite --mode emulator",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "emulators": "firebase emulators:start --project demo-loot-box-vault",
+    "seed:emu": "node scripts/seed.mjs",
+    "test:unit": "vitest run --project unit --reporter=default --reporter=junit --outputFile.junit=test-results/unit-junit.xml",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-loot-box-vault \"vitest run --project rules --reporter=default --reporter=junit --outputFile.junit=test-results/rules-junit.xml\"",
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-loot-box-vault \"node scripts/seed.mjs && playwright test\"",
+    "deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes",
+    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules,firestore:indexes"
+  },
+  "dependencies": {
+    "firebase": "^11.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.16.0",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "firebase-tools": "^15.36.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  }
+}
