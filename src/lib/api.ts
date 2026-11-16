@@ -62,13 +62,20 @@ export async function submitItem(uid: string, item: NewItem) {
   await setDoc(doc(collection(db, 'items')), { ...clean, status: 'pending', submittedBy: uid, createdAt: serverTimestamp() });
 }
 
-/** Admin-only: writes the starter catalog as approved items. */
-export async function seedCatalog(uid: string) {
+export const STARTER_IDS: string[] = seed.map((s) => s.id);
+
+/** Admin-only: writes starter catalog items that are not in Firestore yet (never overwrites edits). */
+export async function seedCatalog(uid: string, existingIds: Iterable<string>) {
+  const have = new Set(existingIds);
   const batch = writeBatch(db);
+  let added = 0;
   for (const { id, ...rest } of seed) {
+    if (have.has(id)) continue;
     batch.set(doc(db, 'items', id), { ...rest, status: 'approved', submittedBy: uid, createdAt: serverTimestamp() });
+    added++;
   }
-  await batch.commit();
+  if (added) await batch.commit();
+  return added;
 }
 
 export function watchPendingItems(cb: (items: Item[]) => void, onError: (e: Error) => void) {

@@ -202,3 +202,4 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent-2); outli
 .pending-actions { display: flex; gap: 10px; margin-top: 14px; }
 .btn-danger { border-color: var(--danger); color: var(--danger); }
 .btn-danger:hover { box-shadow: 0 0 14px rgba(255, 107, 125, 0.35); border-color: var(--danger); }
+.starter-line { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin: 14px 0 0; color: var(--accent-2); font-size: 0.9rem; }
