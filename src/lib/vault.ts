@@ -21,16 +21,20 @@ export function filterItems(items: Item[], entries: Entries, f: CatalogFilter): 
       if (f.ownership === 'missing') return state !== 'owned';
       return state === f.ownership;
     })
-    .filter((i) => !q || [i.name, i.series, i.type, i.number].some((v) => v?.toLowerCase().includes(q)))
+    .filter((i) => !q || [i.name, i.series, i.type, i.number, i.notes].some((v) => v?.toLowerCase().includes(q)))
     .sort(compareItems);
 }
 
 export function compareItems(a: Item, b: Item): number {
   const series = (a.series ?? '').localeCompare(b.series ?? '');
   if (series !== 0) return series;
-  const na = Number(a.number);
-  const nb = Number(b.number);
-  if (!Number.isNaN(na) && !Number.isNaN(nb) && na !== nb) return na - nb;
+  // Numbered items first, in numeric order; unnumbered ones (sketch, signed) after.
+  const na = a.number ? Number(a.number) : Number.NaN;
+  const nb = b.number ? Number(b.number) : Number.NaN;
+  const hasA = !Number.isNaN(na);
+  const hasB = !Number.isNaN(nb);
+  if (hasA !== hasB) return hasA ? -1 : 1;
+  if (hasA && na !== nb) return na - nb;
   return a.name.localeCompare(b.name);
 }
 

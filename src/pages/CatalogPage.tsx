@@ -58,7 +58,7 @@ export function CatalogPage() {
   async function seed() {
     if (!user) return;
     try {
-      await seedCatalog(user.uid);
+      await seedCatalog(user.uid, (items ?? []).map((i) => i.id));
       toast('Starter catalog deployed.');
     } catch {
       toast('Seeding failed. Are you really an admin?', 'error');

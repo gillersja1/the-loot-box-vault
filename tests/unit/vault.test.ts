@@ -45,6 +45,11 @@ describe('filterItems', () => {
     expect(filterItems(items, entries, { ...all, category: 'merch', rarity: 'gold' }).map((i) => i.id)).toEqual(['b10']);
   });
 
+  it('searches notes too (card subsets)', () => {
+    const withNotes = [...items, item({ id: 'n1', name: 'Mantaur', category: 'card', notes: 'Dungeon Mobs' })];
+    expect(filterItems(withNotes, {}, { ...all, category: 'card', search: 'mobs' }).map((i) => i.id)).toEqual(['n1']);
+  });
+
   it('searches name, series and number, ignoring case and whitespace', () => {
     expect(filterItems(items, entries, { ...all, category: 'merch', search: '  TEN ' }).map((i) => i.id)).toEqual(['b10']);
     expect(filterItems(items, entries, { ...all, category: 'merch', search: 'dcc' })).toHaveLength(3);
@@ -52,6 +57,11 @@ describe('filterItems', () => {
 });
 
 describe('compareItems', () => {
+  it('puts unnumbered items after numbered ones', () => {
+    expect(compareItems(item({ name: 'A Sketch' }), item({ name: 'Z', number: '99' }))).toBeGreaterThan(0);
+    expect(compareItems(item({ name: 'Z', number: '99' }), item({ name: 'A Sketch' }))).toBeLessThan(0);
+  });
+
   it('falls back to name when numbers are missing', () => {
     expect(compareItems(item({ name: 'B' }), item({ name: 'A' }))).toBeGreaterThan(0);
   });

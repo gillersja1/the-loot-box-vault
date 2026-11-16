@@ -6,7 +6,7 @@ test.describe('catalog (signed out)', () => {
     await page.goto('/');
     await expect(page.getByRole('heading', { name: 'Catalog' })).toBeVisible();
     await expect(page.getByRole('article', { name: 'Dungeon Crawler Carl', exact: true })).toBeVisible();
-    await expect(page.getByRole('article')).toHaveCount(7);
+    await expect(page.getByRole('article')).toHaveCount(8);
 
     await page.getByRole('tab', { name: 'Cards' }).click();
     await expect(page).toHaveURL(/tab=cards/);
@@ -14,7 +14,7 @@ test.describe('catalog (signed out)', () => {
     await page.getByRole('searchbox').fill('Emulator Set');
     await expect(page.getByRole('article')).toHaveCount(2);
 
-    await page.getByRole('searchbox').fill('foil');
+    await page.getByRole('searchbox').fill('boss battle');
     await expect(page.getByRole('article')).toHaveCount(1);
     await expect(page.getByRole('article', { name: 'Test Card: Boss Battle Foil' })).toBeVisible();
 
@@ -56,7 +56,7 @@ test.describe('signed-in crawler', () => {
     await expect(reveal).toBeHidden();
 
     await expect(book.getByRole('button', { name: 'Owned' })).toHaveAttribute('aria-pressed', 'true');
-    await expect(page.getByLabel('Collection progress')).toContainText('1/7 owned');
+    await expect(page.getByLabel('Collection progress')).toContainText('1/8 owned');
 
     await page.getByRole('article', { name: 'This Inevitable Ruin' }).getByRole('button', { name: 'Grail' }).click();
     await expect(page.getByText('marked as a grail')).toBeVisible();
@@ -65,7 +65,7 @@ test.describe('signed-in crawler', () => {
     await page.getByRole('article', { name: 'Carl\'s Doomsday Scenario' }).getByRole('button', { name: 'Owned' }).click();
     await page.getByRole('button', { name: 'Claim loot' }).click();
     await page.getByRole('article', { name: 'Carl\'s Doomsday Scenario' }).getByRole('button', { name: 'Owned' }).click();
-    await expect(page.getByLabel('Collection progress')).toContainText('1/7 owned');
+    await expect(page.getByLabel('Collection progress')).toContainText('1/8 owned');
 
     // Filters respect ownership.
     await page.getByLabel('Show').selectOption('owned');
@@ -117,4 +117,14 @@ test.describe('signed-in crawler', () => {
     await expect(page.getByRole('link', { name: 'Sign in' })).toBeVisible();
     await expect(page.getByLabel('Collection progress')).toHaveCount(0);
   });
+});
+
+test('the Series One card set is in the catalog with its parallels', async ({ page }) => {
+  await page.goto('/?tab=cards');
+  await page.getByRole('searchbox').fill('Faction Wars');
+  await expect(page.getByRole('article')).toHaveCount(11);
+  await page.getByRole('searchbox').fill('Emerald parallel');
+  await expect(page.getByRole('article')).toHaveCount(81);
+  await page.getByRole('searchbox').fill('Matt Dinniman');
+  await expect(page.getByRole('article', { name: 'Signed: Matt Dinniman' })).toContainText('Celestial');
 });

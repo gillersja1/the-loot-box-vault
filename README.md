@@ -10,7 +10,7 @@ An unofficial **Dungeon Crawler Carl** fan collectors site. Track merch and card
 
 ## Features (v1)
 
-- **Catalog** with Merch and Cards tabs, search, rarity filter and Owned / Missing / Want / Grail filters
+- **Catalog** with Merch and Cards tabs, search, rarity filter and Owned / Missing / Want / Grail filters. Ships with books 1–8 and the full DCC Series One trading card checklist (Classic, Emerald, Gold Foil, Rainbow Foil, Sketch & Signed), with rarity tiers based on the official pull ratios
 - **Synced vault:** sign in with Google, GitHub or an email link; your marks follow you across devices
 - **Loot box reveal:** marking an item Owned opens a box in the item's rarity tier (Bronze → Celestial), with commentary from the System
 - **Shareable vault:** make your vault public and send the link; others get a read-only view
