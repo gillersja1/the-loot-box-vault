@@ -1,0 +1,9 @@
+[
+  { "id": "book-01", "name": "Dungeon Crawler Carl", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "1", "rarity": "bronze" },
+  { "id": "book-02", "name": "Carl's Doomsday Scenario", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "2", "rarity": "bronze" },
+  { "id": "book-03", "name": "The Dungeon Anarchist's Cookbook", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "3", "rarity": "bronze" },
+  { "id": "book-04", "name": "The Gate of the Feral Gods", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "4", "rarity": "bronze" },
+  { "id": "book-05", "name": "The Butcher's Masquerade", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "5", "rarity": "bronze" },
+  { "id": "book-06", "name": "The Eye of the Bedlam Bride", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "6", "rarity": "bronze" },
+  { "id": "book-07", "name": "This Inevitable Ruin", "category": "merch", "type": "Book", "series": "Dungeon Crawler Carl", "number": "7", "rarity": "bronze" }
+]

@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      OTEL_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Cache Firebase emulators
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ hashFiles('package-lock.json') }}
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Firestore security rules tests
+        run: npm run test:rules
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests (Auth + Firestore emulators)
+        run: npm run test:e2e
+
+      - name: Production build
+        run: npm run build
+
+      - name: Send unit results to Grafana
+        if: always() && env.OTEL_ENDPOINT != ''
+        uses: gillersja1/test-results-otel@v1
+        with:
+          results: test-results/unit-junit.xml
+          suite: unit
+          otlp-endpoint: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          otlp-headers: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+
+      - name: Send rules results to Grafana
+        if: always() && env.OTEL_ENDPOINT != ''
+        uses: gillersja1/test-results-otel@v1
+        with:
+          results: test-results/rules-junit.xml
+          suite: firestore-rules
+          otlp-endpoint: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          otlp-headers: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+
+      - name: Send e2e results to Grafana
+        if: always() && env.OTEL_ENDPOINT != ''
+        uses: gillersja1/test-results-otel@v1
+        with:
+          results: test-results/e2e-junit.xml
+          suite: e2e
+          otlp-endpoint: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          otlp-headers: ${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
