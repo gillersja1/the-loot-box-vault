@@ -82,6 +82,19 @@ describe('items', () => {
     await assertSucceeds(deleteDoc(doc(as('admin'), 'items/approved-1')));
   });
 
+  it('only admins can list the pending submission queue', async () => {
+    const pendingQuery = (uid?: string) => getDocs(query(collection(as(uid), 'items'), where('status', '==', 'pending')));
+    await assertSucceeds(pendingQuery('admin'));
+    await assertFails(pendingQuery('alice'));
+    await assertFails(pendingQuery());
+  });
+
+  it('admin approval can edit fields but must stay valid', async () => {
+    await assertSucceeds(updateDoc(doc(as('admin'), 'items/pending-bob'), { status: 'approved', rarity: 'celestial', name: 'Renamed' }));
+    await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { rarity: 'mythic' }));
+    await assertFails(updateDoc(doc(as('admin'), 'items/approved-1'), { name: '' }));
+  });
+
   it('admins can create approved items directly (catalog seeding)', async () => {
     await assertSucceeds(setDoc(doc(as('admin'), 'items/seeded'), card({ status: 'approved', submittedBy: 'admin' })));
   });

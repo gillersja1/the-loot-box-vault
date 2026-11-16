@@ -31,3 +31,34 @@ export async function signInWithEmailLink(page: Page, email: string) {
   // Regression: a successful sign-in must not also report the link as expired.
   await expect(page.getByText('sign-in link is expired')).toHaveCount(0);
 }
+
+/** Grants admin to a signed-in user by writing admins/{uid} with the emulator's rule-bypassing token. */
+export async function makeAdmin(page: Page, email: string) {
+  const owner = { Authorization: 'Bearer owner' };
+  const res = await page.request.post(`${AUTH_EMULATOR}/identitytoolkit.googleapis.com/v1/projects/${PROJECT}/accounts:lookup`, {
+    headers: owner,
+    data: { email: [email] },
+  });
+  const { users } = (await res.json()) as { users?: { localId: string }[] };
+  const uid = users?.[0]?.localId;
+  expect(uid, `no emulator user for ${email}`).toBeTruthy();
+  const write = await page.request.patch(
+    `http://127.0.0.1:8080/v1/projects/${PROJECT}/databases/(default)/documents/admins/${uid}`,
+    { headers: owner, data: { fields: { note: { stringValue: 'e2e admin' } } } },
+  );
+  expect(write.ok()).toBeTruthy();
+  await page.reload(); // admin status is read when auth state loads
+  await expect(page.getByRole('link', { name: 'Admin' })).toBeVisible();
+}
+
+/** Submits an item through the UI and returns its unique name. */
+export async function submitItem(page: Page, prefix: string, opts: { category?: 'merch' | 'card'; rarity?: string } = {}) {
+  const name = `${prefix} ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  await page.getByRole('link', { name: 'Submit' }).click();
+  await page.getByLabel('Name').fill(name);
+  if (opts.category) await page.getByLabel('Category').selectOption(opts.category);
+  if (opts.rarity) await page.getByLabel('Rarity').selectOption(opts.rarity);
+  await page.getByRole('button', { name: 'Submit for review' }).click();
+  await expect(page.getByText('Submitted. It shows up in the catalog')).toBeVisible();
+  return name;
+}
