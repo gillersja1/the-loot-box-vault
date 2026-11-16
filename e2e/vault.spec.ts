@@ -151,5 +151,6 @@ test('the catalog is grouped into collapsible sections', async ({ page }) => {
   await factionWars.getByText('Rainbow Foil: Faction Wars', { exact: true }).click();
   await expect(factionWars.getByRole('article').first()).toBeHidden();
   // Items without an image link get a labeled placeholder.
-  await expect(page.getByRole('img', { name: 'Carl (no image)' }).first()).toBeVisible();
+  await page.getByRole('searchbox').fill('Crawler Rookie');
+  await expect(page.getByRole('img', { name: 'Test Card: Crawler Rookie (no image)' })).toBeVisible();
 });

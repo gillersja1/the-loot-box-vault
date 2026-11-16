@@ -15,7 +15,9 @@ const testCards = [
 const toFields = (obj) =>
   Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, k === 'createdAt' ? { timestampValue: v } : { stringValue: v }]));
 
-for (const { id, ...rest } of [...seed, ...testCards]) {
+// Image links are left out so e2e never depends on a third-party image host;
+// the admin "Fill missing images" test adds them (with the host mocked).
+for (const { id, imageUrl: _image, ...rest } of [...seed, ...testCards]) {
   const res = await fetch(`${base}/items/${id}`, {
     method: 'PATCH',
     headers: { Authorization: 'Bearer owner', 'Content-Type': 'application/json' },
