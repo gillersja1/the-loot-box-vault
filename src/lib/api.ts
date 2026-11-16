@@ -64,6 +64,26 @@ export async function submitItem(uid: string, item: NewItem) {
 
 export const STARTER_IDS: string[] = seed.map((s) => s.id);
 
+const STARTER_IMAGES = new Map<string, string>(
+  seed.flatMap((s) => ('imageUrl' in s && typeof s.imageUrl === 'string' ? [[s.id, s.imageUrl] as [string, string]] : [])),
+);
+
+/** Catalog items that have no image yet but have an official one in the starter catalog. */
+export function itemsMissingStarterImages(items: Item[]): Item[] {
+  return items.filter((i) => !i.imageUrl && STARTER_IMAGES.has(i.id));
+}
+
+/** Admin-only: adds starter image links to items that have none (never replaces an existing image). */
+export async function fillStarterImages(items: Item[]) {
+  const targets = itemsMissingStarterImages(items);
+  for (let i = 0; i < targets.length; i += 400) {
+    const batch = writeBatch(db);
+    for (const item of targets.slice(i, i + 400)) batch.update(doc(db, 'items', item.id), { imageUrl: STARTER_IMAGES.get(item.id)! });
+    await batch.commit();
+  }
+  return targets.length;
+}
+
 /** Admin-only: writes starter catalog items that are not in Firestore yet (never overwrites edits). */
 export async function seedCatalog(uid: string, existingIds: Iterable<string>) {
   const have = new Set(existingIds);

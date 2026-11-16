@@ -103,4 +103,25 @@ test.describe('admin approvals', () => {
     await page.goto('/admin/item/book-01');
     await expect(page.getByRole('heading', { name: 'Access denied' })).toBeVisible();
   });
+
+  test('admin fills missing official images from the starter catalog', async ({ page }) => {
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+    await page.route('https://www.borantcorp.com/**', (route) => route.fulfill({ contentType: 'image/png', body: png }));
+
+    const email = uniqueEmail('admin');
+    await signInWithEmailLink(page, email);
+    await makeAdmin(page, email);
+    await page.getByRole('link', { name: 'Admin' }).click();
+    // Other parallel tests may have filled them already; only click if offered.
+    await expect(page.getByTestId('catalog-status')).toBeVisible();
+    const fill = page.getByRole('button', { name: /^Fill \d+ missing images$/ });
+    // The desktop and mobile projects share one emulator, so the other may click first.
+    if (await fill.isVisible()) await fill.click({ timeout: 3000 }).catch(() => {});
+    await expect(fill).toBeHidden({ timeout: 15000 });
+
+    await page.getByRole('link', { name: 'Catalog' }).click();
+    await page.getByRole('tab', { name: 'Cards' }).click();
+    await page.getByRole('searchbox').fill('Faction Wars');
+    await expect(page.getByRole('img', { name: 'Princess Donut' }).first()).toHaveAttribute('src', /borantcorp\.com.*_090\.jpg$/);
+  });
 });

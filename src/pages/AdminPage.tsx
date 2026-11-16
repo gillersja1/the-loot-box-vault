@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { ItemEditor } from '../components/ItemEditor';
-import { STARTER_IDS, rejectItem, saveItem, seedCatalog, watchApprovedItems, watchPendingItems } from '../lib/api';
+import { STARTER_IDS, fillStarterImages, itemsMissingStarterImages, rejectItem, saveItem, seedCatalog, watchApprovedItems, watchPendingItems } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import type { Item } from '../lib/types';
 
@@ -10,7 +10,7 @@ export function AdminPage() {
   const { user, admin, ready } = useAuth();
   const toast = useToast();
   const [pending, setPending] = useState<Item[] | null>(null);
-  const [approvedIds, setApprovedIds] = useState<string[] | null>(null);
+  const [approved, setApproved] = useState<Item[] | null>(null);
   const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
@@ -19,10 +19,25 @@ export function AdminPage() {
   }, [admin, toast]);
   useEffect(() => {
     if (!admin) return;
-    return watchApprovedItems((items) => setApprovedIds(items.map((i) => i.id)), () => {});
+    return watchApprovedItems(setApproved, () => {});
   }, [admin]);
 
+  const approvedIds = approved?.map((i) => i.id) ?? null;
   const missing = approvedIds ? STARTER_IDS.filter((id) => !approvedIds.includes(id)).length : 0;
+  const missingImages = approved ? itemsMissingStarterImages(approved).length : 0;
+
+  async function fillImages() {
+    if (!approved) return;
+    setSeeding(true);
+    try {
+      const n = await fillStarterImages(approved);
+      toast(`${n} items now have official images.`);
+    } catch {
+      toast('Adding images failed.', 'error');
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   async function addStarters() {
     if (!user || !approvedIds) return;
@@ -56,11 +71,24 @@ export function AdminPage() {
         <p className="eyebrow">Production Booth</p>
         <h1>Submission queue</h1>
         <p className="muted">Review what crawlers submitted. Fix any details, then approve to publish it, or reject to delete it.</p>
+        {approved && (
+          <p className="muted" data-testid="catalog-status">
+            Catalog: {approved.length} items · {approved.filter((i) => i.imageUrl).length} with images
+          </p>
+        )}
         {missing > 0 && (
           <p className="starter-line">
             <span>{missing} starter catalog items are not in the catalog yet.</span>
             <button className="btn btn-primary" disabled={seeding} onClick={addStarters}>
               Add {missing} starter items
+            </button>
+          </p>
+        )}
+        {missingImages > 0 && (
+          <p className="starter-line">
+            <span>{missingImages} catalog items have an official image available.</span>
+            <button className="btn btn-primary" disabled={seeding} onClick={fillImages}>
+              Fill {missingImages} missing images
             </button>
           </p>
         )}
