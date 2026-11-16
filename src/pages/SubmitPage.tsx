@@ -4,12 +4,8 @@ import { useToast } from '../components/Toast';
 import { submitItem } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { RARITIES, RARITY_LABEL } from '../lib/rarity';
+import { ITEM_TYPES as TYPES } from '../lib/itemTypes';
 import type { Category, Rarity } from '../lib/types';
-
-const TYPES: Record<Category, string[]> = {
-  merch: ['Book', 'Audiobook', 'Comic', 'Figure', 'Plush', 'Apparel', 'Print', 'Game', 'Other'],
-  card: ['Trading card', 'Foil', 'Promo', 'Graded', 'Other'],
-};
 
 const blank = { name: '', category: 'merch' as Category, type: 'Book', series: '', number: '', rarity: 'bronze' as Rarity, notes: '' };
 

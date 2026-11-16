@@ -1,12 +1,13 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { signOutUser, useAuth } from './lib/auth';
+import { AdminPage } from './pages/AdminPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { LoginPage } from './pages/LoginPage';
 import { SubmitPage } from './pages/SubmitPage';
 import { VaultPage } from './pages/VaultPage';
 
 export function App() {
-  const { user } = useAuth();
+  const { user, admin } = useAuth();
   return (
     <div className="shell">
       <header className="topbar">
@@ -20,6 +21,7 @@ export function App() {
           </NavLink>
           <NavLink to="/vault">My Vault</NavLink>
           <NavLink to="/submit">Submit</NavLink>
+          {admin && <NavLink to="/admin">Admin</NavLink>}
           {user ? (
             <button className="link-btn" onClick={signOutUser}>
               Sign out
@@ -35,6 +37,7 @@ export function App() {
           <Route path="/vault" element={<VaultPage />} />
           <Route path="/vault/:uid" element={<VaultPage />} />
           <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<p className="empty">404: this floor collapsed.</p>} />
         </Routes>

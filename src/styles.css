@@ -194,3 +194,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent-2); outli
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Admin queue */
+.muted { color: var(--muted); margin: 0; }
+.queue { display: grid; gap: 14px; }
+.pending { border-color: color-mix(in srgb, var(--r) 45%, var(--line)); }
+.pending-actions { display: flex; gap: 10px; margin-top: 14px; }
+.btn-danger { border-color: var(--danger); color: var(--danger); }
+.btn-danger:hover { box-shadow: 0 0 14px rgba(255, 107, 125, 0.35); border-color: var(--danger); }

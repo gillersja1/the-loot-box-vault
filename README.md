@@ -15,6 +15,7 @@ An unofficial **Dungeon Crawler Carl** fan collectors site. Track merch and card
 - **Loot box reveal:** marking an item Owned opens a box in the item's rarity tier (Bronze → Celestial), with commentary from the System
 - **Shareable vault:** make your vault public and send the link; others get a read-only view
 - **Community submissions:** signed-in users submit missing items; they stay pending until an admin approves them
+- **Admin approval queue:** admins review submissions at `/admin`, fix any details, then approve (publish) or reject (delete)
 - HUD-style dark theme, responsive down to phone width, respects reduced motion
 
 ## Stack
@@ -27,7 +28,7 @@ React 18 + TypeScript + Vite · Firebase Auth, Cloud Firestore and Hosting · Vi
 | --- | --- | --- |
 | Unit | Vitest | Filtering, sorting, vault stats, state toggling, rarity helpers |
 | Security rules | `@firebase/rules-unit-testing` on the Firestore emulator | Who can read and write items, vaults and entries; field validation; spoofing and privilege escalation attempts |
-| End-to-end | Playwright (desktop Chrome + Pixel 7) on Auth + Firestore emulators | Real email-link sign-in (codes pulled from the Auth emulator), marking loot, the reveal dialog, public/private vault sharing seen from a second signed-out browser, submissions |
+| End-to-end | Playwright (desktop Chrome + Pixel 7) on Auth + Firestore emulators | Real email-link sign-in (codes pulled from the Auth emulator), marking loot, the reveal dialog, public/private vault sharing seen from a second signed-out browser, submissions, and the admin queue (admin granted mid-test through the emulator) |
 
 CI runs every layer on each push and PR, uploads the Playwright report and traces, and sends results to Grafana via [test-results-otel](https://github.com/gillersja1/test-results-otel).
 
@@ -66,4 +67,4 @@ admins/{uid}                   presence = admin (managed in the Firebase console
 
 ## Roadmap
 
-Drops calendar · achievements · CSV/JSON export and import · signed/slabbed/remarqued status · admin approval queue UI · Discord sign-in
+Drops calendar · achievements · CSV/JSON export and import · signed/slabbed/remarqued status · Discord sign-in

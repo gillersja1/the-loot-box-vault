@@ -10,6 +10,8 @@ test.describe('catalog (signed out)', () => {
 
     await page.getByRole('tab', { name: 'Cards' }).click();
     await expect(page).toHaveURL(/tab=cards/);
+    // Other tests approve new cards in parallel, so count only the seeded set.
+    await page.getByRole('searchbox').fill('Emulator Set');
     await expect(page.getByRole('article')).toHaveCount(2);
 
     await page.getByRole('searchbox').fill('foil');
@@ -22,6 +24,7 @@ test.describe('catalog (signed out)', () => {
 
   test('filters by rarity', async ({ page }) => {
     await page.goto('/?tab=cards');
+    await page.getByRole('searchbox').fill('Emulator Set');
     await page.getByLabel('Rarity').selectOption('legendary');
     await expect(page.getByRole('article')).toHaveCount(1);
   });

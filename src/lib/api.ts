@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where, writeBatch } from 'firebase/firestore';
+import { collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Entries, EntryState, Item, Vault } from './types';
 import seed from '../data/seed.json';
@@ -69,4 +69,31 @@ export async function seedCatalog(uid: string) {
     batch.set(doc(db, 'items', id), { ...rest, status: 'approved', submittedBy: uid, createdAt: serverTimestamp() });
   }
   await batch.commit();
+}
+
+export function watchPendingItems(cb: (items: Item[]) => void, onError: (e: Error) => void) {
+  const q = query(collection(db, 'items'), where('status', '==', 'pending'));
+  return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Item)), onError);
+}
+
+export type ItemEdits = Pick<Item, 'name' | 'category' | 'type' | 'rarity'> & { series: string; number: string; notes: string };
+
+/** Admin-only: applies edits and publishes the item. Empty optional fields are removed. */
+export async function approveItem(id: string, edits: ItemEdits) {
+  const optional = (v: string) => (v.trim() ? v.trim() : deleteField());
+  await updateDoc(doc(db, 'items', id), {
+    name: edits.name.trim(),
+    category: edits.category,
+    type: edits.type,
+    rarity: edits.rarity,
+    series: optional(edits.series),
+    number: optional(edits.number),
+    notes: optional(edits.notes),
+    status: 'approved',
+  });
+}
+
+/** Admin-only: rejecting a submission deletes it. */
+export async function rejectItem(id: string) {
+  await deleteDoc(doc(db, 'items', id));
 }
